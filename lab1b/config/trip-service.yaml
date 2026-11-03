@@ -1,0 +1,64 @@
+global:
+  threadmodel:
+    default:
+      - instance_name: default_instance
+        # 1A root cause: with io_handle_type: merge the handler thread that
+        # blocks on the downstream RPC also owns the event loop, so the process
+        # deadlocks after the first CreateRide. separate + handle_thread_num > 1
+        # is the fix, and 1B keeps it because trip-service now makes two
+        # sequential downstream calls (pricing, then DHT).
+        io_handle_type: separate
+        io_thread_num: 2
+        handle_thread_num: 4
+
+server:
+  app: ride
+  server: trip
+  admin_ip: 0.0.0.0
+  admin_port: 18081
+  service:
+    - name: trpc.ride.trip.TripService
+      protocol: trpc
+      network: tcp
+      ip: 0.0.0.0
+      port: 8000
+
+client:
+  service:
+    - name: trpc.ride.pricing.PricingService
+      target: pricing:8000
+      protocol: trpc
+      network: tcp
+      conn_type: long
+      is_conn_complex: true
+      selector_name: domain
+    # Lab1B: three ring entry points so DHT_ENTRY can switch without a rebuild.
+    - name: trpc.dht.a.DhtService
+      target: dht-a:19001
+      protocol: trpc
+      network: tcp
+      conn_type: long
+      is_conn_complex: true
+      selector_name: domain
+    - name: trpc.dht.b.DhtService
+      target: dht-b:19001
+      protocol: trpc
+      network: tcp
+      conn_type: long
+      is_conn_complex: true
+      selector_name: domain
+    - name: trpc.dht.c.DhtService
+      target: dht-c:19001
+      protocol: trpc
+      network: tcp
+      conn_type: long
+      is_conn_complex: true
+      selector_name: domain
+
+plugins:
+  log:
+    default:
+      - name: default
+        sinks:
+          local_file:
+            filename: /tmp/trip-service.log

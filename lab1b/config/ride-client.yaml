@@ -1,0 +1,16 @@
+global:
+  threadmodel:
+    default:
+      - instance_name: default_instance
+        io_handle_type: merge
+        io_thread_num: 2
+
+client:
+  service:
+    - name: trpc.ride.trip.TripService
+      target: trip:8000
+      protocol: trpc
+      network: tcp
+      conn_type: long
+      is_conn_complex: true
+      selector_name: domain

@@ -1,0 +1,33 @@
+global:
+  threadmodel:
+    default:
+      - instance_name: default_instance
+        io_handle_type: merge
+        io_thread_num: 2
+
+# Client side of the ring: --entry=node-a picks trpc.dht.a.DhtService, so the
+# same binary can start a request at any node. On the cloud VMs the targets are
+# private IPs; see config/cloud/ for the generated copies.
+client:
+  service:
+    - name: trpc.dht.a.DhtService
+      target: dht-a:19001
+      protocol: trpc
+      network: tcp
+      conn_type: long
+      is_conn_complex: true
+      selector_name: domain
+    - name: trpc.dht.b.DhtService
+      target: dht-b:19001
+      protocol: trpc
+      network: tcp
+      conn_type: long
+      is_conn_complex: true
+      selector_name: domain
+    - name: trpc.dht.c.DhtService
+      target: dht-c:19001
+      protocol: trpc
+      network: tcp
+      conn_type: long
+      is_conn_complex: true
+      selector_name: domain

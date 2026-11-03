@@ -1,0 +1,10 @@
+# generated per-deployment, contains private IPs
+config/cloud/
+env/node-inventory.env
+
+# build output
+build/
+*.o
+
+# local logs pulled out of the containers
+logs/

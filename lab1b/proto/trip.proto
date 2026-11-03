@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package trpc.ride;
+
+message CreateRideRequest {
+  string passenger_id = 1;
+  string city = 2;
+  string origin = 3;
+  string destination = 4;
+  double distance_km = 5;
+  string time_slot = 6;
+}
+
+message Trip {
+  string trip_id = 1;
+  string passenger_id = 2;
+  string city = 3;
+  string origin = 4;
+  string destination = 5;
+  double distance_km = 6;
+  string time_slot = 7;
+  double estimated_fare = 8;
+  string status = 9;
+}
+
+message CreateRideReply {
+  bool ok = 1;
+  Trip trip = 2;
+  string message = 3;
+}
+
+message GetTripRequest {
+  string trip_id = 1;
+}
+
+message GetTripReply {
+  bool found = 1;
+  Trip trip = 2;
+  string message = 3;
+}
+
+service TripService {
+  rpc CreateRide(CreateRideRequest) returns (CreateRideReply) {}
+  rpc GetTrip(GetTripRequest) returns (GetTripReply) {}
+}

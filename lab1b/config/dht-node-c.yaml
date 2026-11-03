@@ -1,0 +1,57 @@
+﻿global:
+  threadmodel:
+    default:
+      - instance_name: default_instance
+        # 1A lesson: a handler that blocks on a downstream RPC must not share
+        # the io threads, otherwise the event loop starves and every later
+        # request times out. separate + several handle threads avoids it.
+        io_handle_type: separate
+        io_thread_num: 2
+        handle_thread_num: 4
+
+server:
+  app: dht
+  server: c
+  admin_ip: 0.0.0.0
+  admin_port: 19093
+  service:
+    - name: trpc.dht.c.DhtService
+      protocol: trpc
+      network: tcp
+      ip: 0.0.0.0
+      port: 19001
+
+# One entry per ring member. Only the successor is ever called, but declaring
+# all three keeps the yaml identical in shape on every node (and lets the CLI
+# reuse it).
+client:
+  service:
+    - name: trpc.dht.a.DhtService
+      target: dht-a:19001
+      protocol: trpc
+      network: tcp
+      conn_type: long
+      is_conn_complex: true
+      selector_name: domain
+    - name: trpc.dht.b.DhtService
+      target: dht-b:19001
+      protocol: trpc
+      network: tcp
+      conn_type: long
+      is_conn_complex: true
+      selector_name: domain
+    - name: trpc.dht.c.DhtService
+      target: dht-c:19001
+      protocol: trpc
+      network: tcp
+      conn_type: long
+      is_conn_complex: true
+      selector_name: domain
+
+plugins:
+  log:
+    default:
+      - name: default
+        sinks:
+          local_file:
+            filename: /tmp/dht-node-c.log

@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package trpc.ride;
+
+// Pricing owns the fare policy. Other services ask for a quote instead of
+// copying this rule, so that a policy change has one source of truth.
+message EstimateFareRequest {
+  string city = 1;
+  double distance_km = 2;
+  string time_slot = 3;  // "peak" or "offpeak"
+}
+
+message EstimateFareReply {
+  bool ok = 1;
+  double base_fare = 2;
+  double distance_fare = 3;
+  double multiplier = 4;
+  double total_fare = 5;
+  string quoted_at = 6;
+  string message = 7;
+}
+
+service PricingService {
+  rpc EstimateFare(EstimateFareRequest) returns (EstimateFareReply) {}
+}

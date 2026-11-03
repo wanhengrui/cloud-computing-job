@@ -1,0 +1,14 @@
+# The ring runs on Linux; CRLF in a .sh or a shebang is fatal
+# (`bash: '\r': command not found`). Keep LF no matter where it is cloned.
+* text=auto eol=lf
+
+*.sh   text eol=lf
+*.py   text eol=lf
+*.cc   text eol=lf
+*.h    text eol=lf
+*.proto text eol=lf
+*.yaml text eol=lf
+*.yml  text eol=lf
+Dockerfile text eol=lf
+*.env  text eol=lf
+*.md   text eol=lf

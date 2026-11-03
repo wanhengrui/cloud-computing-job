@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package trpc.dht;
+
+// Lab1B contract: a plain key/value ring. Nothing in this file may mention
+// Trip, because the DHT has to stay a generic KV layer that any service can
+// reuse. `hops` is the field the report needs as evidence: it starts at 0 at
+// the entry node and is incremented once per forwarding step. `path` is not
+// required by the exercise; it exists so every log line can show the full
+// route a key travelled.
+
+message PutRequest {
+  string key = 1;
+  bytes value = 2;
+  uint32 hops = 3;
+  string path = 4;
+}
+
+message PutReply {
+  bool ok = 1;
+  // Node that actually stored the value, e.g. "node-b".
+  string owner = 2;
+  uint32 hops = 3;
+  string message = 4;
+}
+
+message GetRequest {
+  string key = 1;
+  uint32 hops = 2;
+  string path = 3;
+}
+
+message GetReply {
+  bool found = 1;
+  bytes value = 2;
+  string owner = 3;
+  uint32 hops = 4;
+  string message = 5;
+}
+
+service DhtService {
+  rpc Put(PutRequest) returns (PutReply) {}
+  rpc Get(GetRequest) returns (GetReply) {}
+}

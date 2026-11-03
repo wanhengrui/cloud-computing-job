@@ -1,0 +1,84 @@
+name: lab1b
+
+# Local three-node ring on one laptop. The cloud deployment keeps the same
+# images and the same environment contract; only the yaml targets change from
+# container names to private IPs (see scripts/gen-cloud-config.sh).
+
+x-inventory: &inventory
+  NODE_A_NAME: node-a
+  NODE_A_HOST: dht-a
+  NODE_A_PORT: "19001"
+  NODE_A_ID: "79934867"   # FNV-1a 32 of "node-a" = 0x04c3b593
+  NODE_B_NAME: node-b
+  NODE_B_HOST: dht-b
+  NODE_B_PORT: "19001"
+  NODE_B_ID: "96712486"   # 0x05c3b726
+  NODE_C_NAME: node-c
+  NODE_C_HOST: dht-c
+  NODE_C_PORT: "19001"
+  NODE_C_ID: "113490105"  # 0x06c3b8b9
+
+services:
+  pricing:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: lab1b-dht-microservices:local
+    command: ["/app/pricing_server", "--config=/app/config/pricing-service.yaml"]
+    ports:
+      - "18001:8000"
+    networks: [ridenet]
+
+  dht-a:
+    image: lab1b-dht-microservices:local
+    command: ["/app/dht_server", "--config=/app/config/dht-node-a.yaml"]
+    environment:
+      <<: *inventory
+      SELF: node-a
+    ports:
+      - "19001:19001"
+    networks: [ridenet]
+
+  dht-b:
+    image: lab1b-dht-microservices:local
+    command: ["/app/dht_server", "--config=/app/config/dht-node-b.yaml"]
+    environment:
+      <<: *inventory
+      SELF: node-b
+    ports:
+      - "19002:19001"
+    networks: [ridenet]
+
+  dht-c:
+    image: lab1b-dht-microservices:local
+    command: ["/app/dht_server", "--config=/app/config/dht-node-c.yaml"]
+    environment:
+      <<: *inventory
+      SELF: node-c
+    ports:
+      - "19003:19001"
+    networks: [ridenet]
+
+  trip:
+    image: lab1b-dht-microservices:local
+    command: ["/app/trip_server", "--config=/app/config/trip-service.yaml"]
+    environment:
+      <<: *inventory
+      # Which ring node trip-service enters from. Change it to node-b / node-c
+      # to show the same key travelling a different route.
+      DHT_ENTRY: node-a
+    ports:
+      - "18002:8000"
+    depends_on: [pricing, dht-a, dht-b, dht-c]
+    networks: [ridenet]
+
+  client:
+    image: lab1b-dht-microservices:local
+    profiles: ["tools"]
+    command: ["/app/ride_client", "--op=create", "--client_config=/app/config/ride-client.yaml"]
+    depends_on: [trip]
+    networks: [ridenet]
+
+networks:
+  ridenet:
+    driver: bridge
