@@ -56,7 +56,8 @@ ride_client --> trip-service --> pricing-service          (unchanged from 1A)
 ## Quick start (one laptop, Docker Desktop / WSL2)
 
 ```bash
-cd lab1-b/project
+cd lab1b          # repo layout: cloud-computing-job/lab1b
+                  # on the author's laptop the same tree lives at 云计算/lab1-b/project
 bash scripts/up.sh          # build + start pricing, trip, dht-a/b/c
 bash scripts/verify.sh      # 23 checks: ring coverage, hops, 41.04 / 17.20
 bash scripts/fault-test.sh  # stop node-b, observe, restart
